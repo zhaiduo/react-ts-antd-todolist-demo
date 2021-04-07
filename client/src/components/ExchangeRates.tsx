@@ -1,5 +1,4 @@
-
-import { useQuery, gql } from '@apollo/client';
+import { useQuery, gql } from "@apollo/client";
 
 export const EXCHANGE_RATES = gql`
   query GetExchangeRates {
@@ -10,7 +9,7 @@ export const EXCHANGE_RATES = gql`
   }
 `;
 
-const ExchangeRates: any = ()=> {
+const ExchangeRates: any = () => {
   const { loading, error, data } = useQuery(EXCHANGE_RATES);
 
   if (loading) return <p>Loading...</p>;
@@ -19,10 +18,10 @@ const ExchangeRates: any = ()=> {
   return data.rates.map((n: any) => (
     <div key={n.currency}>
       <p className="sub">
-        {n.currency}: {n.rate}
+        {n.currency}:{n.rate}
       </p>
     </div>
   ));
-}
+};
 
 export default ExchangeRates;

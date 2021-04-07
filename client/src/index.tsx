@@ -1,18 +1,18 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
-import { ConfigProvider } from 'antd';
-import zhCN from 'antd/lib/locale/zh_CN';
+import React from "react";
+import ReactDOM from "react-dom";
+import "./index.css";
+import { ConfigProvider } from "antd";
+import zhCN from "antd/lib/locale/zh_CN";
 
-import { ApolloProvider } from '@apollo/client/react';
-import { ApolloClient, InMemoryCache} from '@apollo/client';
+import { ApolloProvider } from "@apollo/client/react";
+import { ApolloClient, InMemoryCache } from "@apollo/client";
+import reportWebVitals from "./reportWebVitals";
+import App from "./App";
 
-const client = new ApolloClient({ 
-  uri: 'https://48p1r2roz4.sse.codesandbox.io',
+const client = new ApolloClient({
+  uri: "https://48p1r2roz4.sse.codesandbox.io",
   cache: new InMemoryCache()
- });
+});
 
 //  client
 //   .query({
@@ -29,13 +29,12 @@ const client = new ApolloClient({
 ReactDOM.render(
   <React.StrictMode>
     <ApolloProvider client={client}>
-    <ConfigProvider locale={zhCN}>
-      <App />
-    </ConfigProvider>
+      <ConfigProvider locale={zhCN}>
+        <App />
+      </ConfigProvider>
     </ApolloProvider>
-  </React.StrictMode>
-    ,
-  document.getElementById('root')
+  </React.StrictMode>,
+  document.getElementById("root")
 );
 
 // If you want to start measuring performance in your app, pass a function
