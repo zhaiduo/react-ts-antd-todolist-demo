@@ -7,7 +7,7 @@ import { ConfigProvider } from 'antd';
 import zhCN from 'antd/lib/locale/zh_CN';
 
 import { ApolloProvider } from '@apollo/client/react';
-import { ApolloClient, InMemoryCache, gql} from '@apollo/client';
+import { ApolloClient, InMemoryCache} from '@apollo/client';
 
 const client = new ApolloClient({ 
   uri: 'https://48p1r2roz4.sse.codesandbox.io',
