@@ -36,6 +36,7 @@ const Index: any = () => {
               icon={<GithubOutlined />}
               size="large"
               onClick={loginWithGithub}
+              className="github-btn"
             >
               Sign In with Github Account
             </Button>

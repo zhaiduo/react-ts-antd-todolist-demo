@@ -1,28 +1,22 @@
 import React from "react";
-// import { render, screen } from '@testing-library/react';
-import TestRenderer from "react-test-renderer";
+import { render, fireEvent, waitFor, screen } from "@testing-library/react";
+import { act } from "react-dom/test-utils";
+import "./mock/matchMedia";
 import { MockedProvider } from "@apollo/client/testing";
 import { Button } from "antd";
 import App from "./App";
 
-const { act } = TestRenderer;
-
 const mocks: any = [];
 
 it("renders App without error", async () => {
-  const component = TestRenderer.create(
+  const { container, getByText } = render(
     <MockedProvider mocks={mocks} addTypename={false}>
       <App />
     </MockedProvider>
   );
 
   await act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   });
-  const testInstance = component.root;
-  const tree: any = component.toJSON();
-  // console.log("tree.children==", testInstance.findByProps({type: "primary"}).props)
-  expect(testInstance.findByProps({ type: "primary" }).props.children).toMatch(
-    "learn react"
-  );
+  expect(getByText("Sign In with Github Account")).toBeInTheDocument();
 });

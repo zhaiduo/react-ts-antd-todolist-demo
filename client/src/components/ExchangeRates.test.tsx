@@ -1,10 +1,17 @@
 import React from "react";
-// import {render, screen} from '@testing-library/react'
-import TestRenderer from "react-test-renderer";
+import { render, fireEvent, waitFor, screen } from "@testing-library/react";
+import { act } from "react-dom/test-utils";
+import "../mock/matchMedia";
 import { MockedProvider } from "@apollo/client/testing";
-import ExchangeRates, { EXCHANGE_RATES } from "./ExchangeRates";
+import ExchangeRates, {
+  EXCHANGE_RATES,
+  EDIT_TODO,
+  DEL_TODO,
+  CREATE_TODO
+} from "./ExchangeRates";
+import UserContext from "../context/UserContext";
+// import { getByTextContent, findByTextContent } from "../mock/helper";
 
-const { act } = TestRenderer;
 const mocks: any = [
   {
     request: {
@@ -13,34 +20,94 @@ const mocks: any = [
     },
     result: {
       data: {
-        rates: [
-          { currency: "AED", rate: "3.673015", __typename: "ExchangeRate" }
-        ]
+        allTodos: {
+          data: [
+            {
+              completed: true,
+              task: "哈哈哈宿舍睡觉睡觉睡觉23",
+              __typename: "Todo",
+              _id: "295289913030476289"
+            }
+          ]
+        }
       }
     }
   }
 ];
 
-const SubComponent = () => <p>AED: 3.673015</p>;
+const mock2: any = [
+  {
+    request: {
+      query: EDIT_TODO,
+      variables: {
+        task: "I have changed.",
+        completed: true,
+        id: "295289913030476289"
+      }
+    },
+    result: {
+      data: {
+        allTodos: {
+          data: [
+            {
+              completed: true,
+              task: "I have changed.",
+              __typename: "Todo",
+              _id: "295289913030476289"
+            }
+          ]
+        }
+      }
+    }
+  }
+];
 
-it("renders ExchangeRates without error", async () => {
-  const component = TestRenderer.create(
+const customRender = (ui: any, { providerProps, ...renderOptions }: any) => {
+  return render(
+    <UserContext.Provider {...providerProps}>{ui}</UserContext.Provider>,
+    renderOptions
+  );
+};
+
+it("renders TodoList without error", async () => {
+  const providerProps = {
+    value: {
+      isShowtaskModal: false,
+      setIsShowtaskModal: (v: boolean) => {
+        providerProps.value.isShowtaskModal = v;
+      }
+    }
+  };
+
+  const { container, getByText } = customRender(
     <MockedProvider mocks={mocks} addTypename={false}>
       <ExchangeRates />
-    </MockedProvider>
+    </MockedProvider>,
+    { providerProps }
   );
 
   await act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   });
 
-  const testInstance = component.root;
-  const tree: any = component.toJSON();
-  // console.log("tree.children==", tree.children[0])
-  // expect(tree.children[0]).toMatchObject(<p>AED: 3.673015</p>);
+  expect(getByText("哈哈哈宿舍睡觉睡觉睡觉23")).toBeInTheDocument();
 
-  // console.log("tree.children==", testInstance.findByProps({className: "sub"}).children)
-  expect(testInstance.findByProps({ className: "sub" }).children[0]).toEqual(
-    "AED"
+  const editBtn = screen.getByTestId("edit-btn-0");
+  const leftClick = { button: 0 };
+  fireEvent.click(editBtn, leftClick);
+  expect(getByText("New To Do")).toBeInTheDocument();
+
+  const inputNode = screen.getByPlaceholderText("Please enter you task name.");
+  fireEvent.change(inputNode, { target: { value: "I have changed." } });
+
+  await waitFor(() =>
+    expect(screen.getByDisplayValue("I have changed.")).toBeTruthy()
   );
+
+  const submitBtn = screen.getByText("OK");
+  // screen.getByText("确定");
+  const leftClick2 = { button: 0 };
+  fireEvent.click(submitBtn, leftClick2);
+  // await waitFor(() => expect(getByText("New To Do")).not.toBeInTheDocument());
+  // await waitFor(() => expect(getByText("I have changed.")).toBeInTheDocument());
 });

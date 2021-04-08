@@ -324,12 +324,14 @@ const ExchangeRates: any = () => {
                 <Button
                   onClick={editItem(item)}
                   className="link"
+                  data-testid={`edit-btn-${index}`}
                   key="list-loadmore-edit"
                 >
                   Edit
                 </Button>,
                 <Button
                   onClick={delItem(item)}
+                  data-testid={`del-btn-${index}`}
                   className="link"
                   key="list-loadmore-delete"
                 >
