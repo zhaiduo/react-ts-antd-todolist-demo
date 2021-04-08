@@ -1,6 +1,5 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import "./index.css";
 import { ConfigProvider } from "antd";
 import zhCN from "antd/lib/locale/zh_CN";
 
@@ -8,6 +7,8 @@ import { ApolloProvider } from "@apollo/client/react";
 import { ApolloClient, InMemoryCache } from "@apollo/client";
 import reportWebVitals from "./reportWebVitals";
 import App from "./App";
+
+import "./index.less";
 
 const client = new ApolloClient({
   uri: "https://48p1r2roz4.sse.codesandbox.io",

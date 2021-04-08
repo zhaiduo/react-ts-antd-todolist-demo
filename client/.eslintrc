@@ -11,7 +11,7 @@
     "node": true
   },
   "rules": { 
-    "no-console": 1, // Remember, this means error!
+    "no-console": 0, // Remember, this means error!
     "prettier/prettier": 2, // Means error
     "no-use-before-define": "off",
     "@typescript-eslint/no-use-before-define": ["error"],
@@ -27,7 +27,9 @@
    ],
    "react/jsx-filename-extension": [2, { "extensions": [".js", ".jsx", ".ts", ".tsx"] }],
    "react/react-in-jsx-scope": "off",
-   "react/jsx-props-no-spreading": ["error", {"custom": "ignore"}]
+   "react/jsx-props-no-spreading": ["error", {"custom": "ignore"}],
+   "arrow-body-style": 0,
+   "no-underscore-dangle": 0
   },
   "settings": {
     "import/resolver": {

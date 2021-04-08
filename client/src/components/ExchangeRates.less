@@ -1,0 +1,91 @@
+.demo-infinite-container {
+  height: 300px;
+  padding: 8px 24px;
+  overflow: auto;
+  border: 1px solid #e8e8e8;
+  border-radius: 4px;
+}
+.demo-loading-container {
+  position: absolute;
+  bottom: 40px;
+  width: 100%;
+  text-align: center;
+}
+.demo-loading-container-top {
+  position: absolute;
+  top: 140px;
+  width: 100%;
+  text-align: center;
+}
+.demo-loading-content {
+  cursor: pointer;
+  text-align: left;
+  width: 68%;
+}
+.demo-loading-content-done {
+  cursor: pointer;
+  text-align: left;
+  width: 68%;
+  text-decoration-line: line-through;
+}
+.demo-loading-content-done:hover {
+  text-align: left;
+  text-decoration-line: none;
+}
+.link {
+  cursor: pointer;
+}
+.link:hover {
+  cursor: pointer;
+  color: #1da57a;
+}
+.demo-loading-item {
+  background-color: #fff;
+}
+.demo-loading-item:hover {
+  background-color: #efefef;
+  -webkit-transition: background-color 1s ease-out;
+  -moz-transition: background-color 1s ease-out;
+  -o-transition: background-color 1s ease-out;
+  transition: background-color 1s ease-out;
+}
+.center {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding-left: 14px;
+}
+
+@media (max-width: 860px) {
+  .demo-loading-content {
+    cursor: pointer;
+    text-align: left;
+    width: 60%;
+    margin-bottom: 20px;
+    padding-left: 20px;
+  }
+  .demo-loading-content-done {
+    cursor: pointer;
+    text-align: left;
+    width: 60%;
+    margin-bottom: 20px;
+    padding-left: 20px;
+    text-decoration-line: line-through;
+  }
+}
+@media (max-width: 560px) {
+  .demo-loading-content {
+    cursor: pointer;
+    text-align: left;
+    width: 85%;
+    margin-bottom: 20px;
+  }
+  .demo-loading-content-done {
+    cursor: pointer;
+    text-align: left;
+    width: 85%;
+    margin-bottom: 20px;
+    text-decoration-line: line-through;
+  }
+}
