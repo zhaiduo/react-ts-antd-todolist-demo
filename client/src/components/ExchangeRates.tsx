@@ -1,5 +1,5 @@
 import React from "react";
-import { useQuery, gql } from "@apollo/client";
+import { useQuery, useMutation, gql, NetworkStatus } from "@apollo/client";
 import {
   CheckCircleFilled,
   CheckCircleOutlined,
@@ -26,6 +26,34 @@ import "./ExchangeRates.less";
 
 const { Text } = Typography;
 
+export const CREATE_TODO = gql`
+  mutation PostMutationTodo($task: String!, $completed: Boolean!) {
+    createTodo(data: { task: $task, completed: $completed }) {
+      _id
+      task
+      completed
+    }
+  }
+`;
+
+export const EDIT_TODO = gql`
+  mutation EditTodo($task: String!, $completed: Boolean!, $id: ID!) {
+    updateTodo(id: $id, data: { task: $task, completed: $completed }) {
+      _id
+      task
+      completed
+    }
+  }
+`;
+
+export const DEL_TODO = gql`
+  mutation DelTodo($id: ID!) {
+    deleteTodo(id: $id) {
+      _id
+    }
+  }
+`;
+
 export const EXCHANGE_RATES = gql`
   query GetTodos {
     allTodos {
@@ -42,13 +70,22 @@ const ExchangeRates: any = () => {
   const { isShowtaskModal, setIsShowtaskModal }: any = React.useContext(
     UserContext
   );
-  const { loading, error, data } = useQuery(EXCHANGE_RATES);
+  const { loading, error, data, refetch, networkStatus } = useQuery(
+    EXCHANGE_RATES,
+    {
+      variables: {},
+      notifyOnNetworkStatusChange: true
+    }
+  );
   console.log("data==", data, error, isShowtaskModal);
+
   const [hasMore] = React.useState(false);
 
   const [disabled, setDisabled] = React.useState(false);
+  const [isEdit, setIsEdit] = React.useState(false);
   const [checkedComplete, setCheckedComplete] = React.useState(false);
   const [taskName, setTaskName] = React.useState("");
+  const [taskId, setTaskId] = React.useState("");
   const [bounds, setBounds] = React.useState({
     left: 0,
     top: 0,
@@ -56,13 +93,103 @@ const ExchangeRates: any = () => {
     right: 0
   });
 
-  const draggleRef: any = React.createRef();
+  const [
+    delTodo,
+    { loading: mutationLoading, error: mutationError }
+  ] = useMutation(DEL_TODO, {
+    refetchQueries: [{ query: EXCHANGE_RATES }],
+    update(cache, { data: data2 }) {
+      console.log("update==delTodo", cache, data2);
+      refetch();
+    }
+  });
 
-  const handleModalOk = React.useCallback(() => {
-    setIsShowtaskModal(false);
-    setTaskName("");
-    setCheckedComplete(false);
-  }, [setIsShowtaskModal]);
+  const [
+    editTodo,
+    { loading: mutationLoading2, error: mutationError2 }
+  ] = useMutation(EDIT_TODO, {
+    refetchQueries: [{ query: EXCHANGE_RATES }],
+    update(cache, { data: data2 }) {
+      console.log("update==editTodo", cache, data2);
+      refetch();
+    }
+  });
+
+  const [createTodo] = useMutation(CREATE_TODO, {
+    variables: {
+      task: taskName,
+      completed: checkedComplete
+    },
+    refetchQueries: [{ query: EXCHANGE_RATES }],
+    update(cache, { data: data2 }) {
+      console.log("update==createTodo", cache, data2);
+      refetch();
+    }
+  });
+
+  const draggleRef: any = React.createRef();
+  const modelRef: any = React.createRef();
+  const inputRef: any = React.createRef();
+
+  const handleModalOk = React.useCallback(
+    (e: any) => {
+      e.preventDefault();
+      if (!taskName) {
+        Modal.warning({
+          title: "Confirm",
+          icon: <ExclamationCircleOutlined />,
+          content: `Please enter your task name!`,
+          okText: "确认",
+          cancelText: "取消",
+          onOk: () => {
+            console.log("onOk==", inputRef);
+            if (inputRef && inputRef.current) {
+              console.log("inputRef.current==", inputRef.current);
+              inputRef.current.focus();
+            }
+            return new Promise((resolve) => {
+              resolve(true);
+            });
+          }
+        });
+        return;
+      }
+
+      // console.log("isEdit==", isEdit, taskId, taskName, checkedComplete);
+
+      if (isEdit && taskId) {
+        editTodo({
+          variables: { task: taskName, completed: checkedComplete, id: taskId }
+        });
+        setIsShowtaskModal(false);
+        setTaskName("");
+        setTaskId("");
+        setCheckedComplete(false);
+        setIsEdit(false);
+      } else {
+        createTodo();
+        setIsShowtaskModal(false);
+        setTaskName("");
+        setCheckedComplete(false);
+      }
+    },
+    [
+      setIsShowtaskModal,
+      setTaskName,
+      setTaskId,
+      setCheckedComplete,
+      taskId,
+      taskName,
+      checkedComplete,
+      isShowtaskModal,
+      inputRef,
+      createTodo,
+      useMutation,
+      isEdit,
+      editTodo,
+      setIsEdit
+    ]
+  );
 
   const handleModalCancel = React.useCallback(() => {
     setIsShowtaskModal(false);
@@ -70,18 +197,21 @@ const ExchangeRates: any = () => {
     setCheckedComplete(false);
   }, [setIsShowtaskModal]);
 
-  const onStartDrag = (event: any, uiData: any) => {
-    const { clientWidth, clientHeight } = window?.document?.documentElement;
-    if (draggleRef && draggleRef.current) {
-      const targetRect = draggleRef.current.getBoundingClientRect();
-      setBounds({
-        left: -targetRect?.left + uiData?.x,
-        right: clientWidth - (targetRect?.right - uiData?.x),
-        top: -targetRect?.top + uiData?.y,
-        bottom: clientHeight - (targetRect?.bottom - uiData?.y)
-      });
-    }
-  };
+  const onStartDrag = React.useCallback(
+    (event: any, uiData: any) => {
+      const { clientWidth, clientHeight } = window?.document?.documentElement;
+      if (draggleRef && draggleRef.current) {
+        const targetRect = draggleRef.current.getBoundingClientRect();
+        setBounds({
+          left: -targetRect?.left + uiData?.x,
+          right: clientWidth - (targetRect?.right - uiData?.x),
+          top: -targetRect?.top + uiData?.y,
+          bottom: clientHeight - (targetRect?.bottom - uiData?.y)
+        });
+      }
+    },
+    [draggleRef, setBounds]
+  );
 
   const onChangeComplate = React.useCallback(() => {
     setCheckedComplete(!checkedComplete);
@@ -95,6 +225,8 @@ const ExchangeRates: any = () => {
     [setTaskName]
   );
 
+  if (networkStatus === NetworkStatus.refetch)
+    return <div className="demo-loading-container-top">Refetching</div>;
   if (loading)
     return (
       <div className="demo-loading-container-top">
@@ -104,40 +236,69 @@ const ExchangeRates: any = () => {
   if (error) return <div className="demo-loading-container-top">Error :(</div>;
 
   if (!data || !data.allTodos || !data.allTodos.data) {
-    return <p>Error :(</p>;
+    return <div className="demo-loading-container-top">Error :(</div>;
   }
+
+  // React.useMemo(() => {
+  //   // if (data.allTodos.data.length !== todolist) setTodolist(data.allTodos.data);
+  // }, [todolist, setTodolist, data]);
 
   const editItem = (item: any) =>
     React.useCallback(
       (e: any) => {
         console.log("editItem==", item, e);
+        setIsEdit(true);
         setTaskName(item.task);
+        setTaskId(item._id);
         setCheckedComplete(item.completed);
         setIsShowtaskModal(true);
       },
-      [setCheckedComplete, setIsShowtaskModal, setTaskName]
+      [
+        setCheckedComplete,
+        setIsShowtaskModal,
+        setTaskName,
+        setIsEdit,
+        setTaskId
+      ]
     );
 
-  const delItem = (item: any) => (e: any) => {
-    console.log("delItem==", item, e);
-    Modal.confirm({
-      title: "Confirm",
-      icon: <ExclamationCircleOutlined />,
-      content: `Are you sure to delete "${item.task}"`,
-      okText: "确认",
-      cancelText: "取消",
-      onOk: () => {
-        return new Promise((resolve) => {
-          resolve(true);
+  const delItem = (item: any) =>
+    React.useCallback(
+      (e: any) => {
+        console.log("delItem==", item, e);
+        Modal.confirm({
+          title: "Confirm",
+          icon: <ExclamationCircleOutlined />,
+          content: (
+            <div>
+              Are you sure to delete {item.task}
+              {mutationLoading && <p>Waiting...</p>}
+              {mutationError && <p>Delete Error :( Please try again</p>}
+            </div>
+          ),
+          okText: "确认",
+          cancelText: "取消",
+          onOk: async () => {
+            setTaskId(item._id);
+            // console.log("setTaskId==", taskId, item._id);
+            await delTodo({ variables: { id: item._id } });
+            return new Promise((resolve) => {
+              if (mutationError) {
+                resolve(false);
+              } else {
+                resolve(true);
+              }
+            });
+          },
+          onCancel: () => {
+            return new Promise((resolve) => {
+              resolve(true);
+            });
+          }
         });
       },
-      onCancel: () => {
-        return new Promise((resolve) => {
-          resolve(true);
-        });
-      }
-    });
-  };
+      [taskId, setTaskId, delTodo]
+    );
 
   const handleInfiniteOnLoad = () => {};
 
@@ -151,7 +312,11 @@ const ExchangeRates: any = () => {
         useWindow={false}
       >
         <List
-          dataSource={data.allTodos.data}
+          dataSource={data.allTodos.data
+            .map((n: any) => n)
+            .sort((a: any, b: any) => {
+              return a.completed < b.completed;
+            })}
           renderItem={(item: any, index: number) => (
             <List.Item
               key={index}
@@ -243,6 +408,7 @@ const ExchangeRates: any = () => {
             disabled={disabled}
             bounds={bounds}
             onStart={(event, uiData) => onStartDrag(event, uiData)}
+            ref={modelRef}
           >
             <div ref={draggleRef}>{modal}</div>
           </Draggable>
@@ -265,8 +431,11 @@ const ExchangeRates: any = () => {
             bordered={false}
             value={taskName}
             onChange={onChangeTask}
+            ref={inputRef}
           />
         </p>
+        {mutationLoading2 && <p>Waiting...</p>}
+        {mutationError2 && <p>Edit Error :( Please try again</p>}
       </Modal>
     </div>
   );

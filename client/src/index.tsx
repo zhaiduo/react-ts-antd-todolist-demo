@@ -28,13 +28,11 @@ const client = new ApolloClient({
 //   .then((result: any) => console.log("result==", result));
 
 ReactDOM.render(
-  <React.StrictMode>
-    <ApolloProvider client={client}>
-      <ConfigProvider locale={zhCN}>
-        <App />
-      </ConfigProvider>
-    </ApolloProvider>
-  </React.StrictMode>,
+  <ApolloProvider client={client}>
+    <ConfigProvider locale={zhCN}>
+      <App />
+    </ConfigProvider>
+  </ApolloProvider>,
   document.getElementById("root")
 );
 
